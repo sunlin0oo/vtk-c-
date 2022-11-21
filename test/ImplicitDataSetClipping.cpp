@@ -18,8 +18,8 @@
 #include <vtkBox.h>
 #include <vtkPlaneCollection.h>
 #include <vtkPlane.h>
-#include <vtkRenderWindow.h>
 #include <vtkPlaneSource.h>
+#include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkRenderer.h>
 #include <vtkAutoInit.h>
@@ -80,12 +80,33 @@ int main(int argc, char* argv[])
     vtkNew<vtkPlane> plane1;
     plane1->SetOrigin(center[0], center[1], center[2]);
     plane1->SetNormal(-0.5, -0.5, 0.0);
-    vtkNew<vtkPlane> plane2;
-    plane2->SetOrigin(center[0], center[1], center[2]);
-    plane2->SetNormal(0.0, 0.0, 1.0);
-    vtkNew<vtkPlaneCollection> planes;
-    planes->AddItem(plane1);
-    planes->AddItem(plane2);
+    //vtkNew<vtkPlane> plane2;
+    //plane2->SetOrigin(center[0], center[1], center[2]);
+    //plane2->SetNormal(0.0, 0.0, 1.0);
+    //vtkNew<vtkPlaneCollection> planes;
+    //planes->AddItem(plane1);
+    //planes->AddItem(plane2);
+    // --------------- END ---------------
+
+    //--------------- implicit DataSet display ---------------
+    vtkNew<vtkPlaneSource> planeSource;
+    planeSource->SetCenter(center[0], center[1], center[2]);
+    planeSource->SetNormal(-0.5, -0.5, 0.0);
+    planeSource->Update();
+
+    vtkPolyData* plane = planeSource->GetOutput();
+    //--------------- END ---------------
+
+    // --------------- implicit DataSet display Mapper ---------------
+    // Create a mapper and actor for cube
+    vtkNew<vtkPolyDataMapper> implicitMapper;
+    implicitMapper->SetInputData(plane);
+
+    vtkNew<vtkActor> implicitActor;
+    implicitActor->SetMapper(implicitMapper);
+    implicitActor->GetProperty()->SetRepresentationToSurface();
+    //implicitActor->GetProperty()->SetOpacity(0);
+    implicitActor->GetProperty()->SetColor(colors->GetColor3d("red").GetData());
     // --------------- END ---------------
 
     // --------------- Clip ---------------
@@ -96,7 +117,6 @@ int main(int argc, char* argv[])
     clipper->InsideOutOn();
     clipper->Update();
     // --------------- END ---------------
-
 
     // --------------- Create a mapper and actor for clipped --------------
     vtkNew<vtkPolyDataMapper> clippedMapper;
@@ -109,22 +129,7 @@ int main(int argc, char* argv[])
     clippedActor->GetProperty()->SetColor(colors->GetColor3d("Yellow").GetData());
     //--------------- END ---------------
 
-
-    // --------------- implicit Mapper ---------------
-    // Create a mapper and actor for cube
-    vtkNew<vtkPolyDataMapper> implicitMapper;
-    //implicitMapper->SetInputConnection(cubeSource->GetOutputPort());
-
-    vtkNew<vtkActor> implicitActor;
-    implicitActor->SetMapper(implicitMapper);
-    implicitActor->GetProperty()->SetRepresentationToWireframe();
-    implicitActor->GetProperty()->SetOpacity(1);
-    //cubeActor->GetProperty()->SetColor(colors->GetColor3d("Blue").GetData());
-    // --------------- END ---------------
-
-
     // --------------- Render ---------------
-
     // Create a renderer, render window, and interactor
     vtkNew<vtkRenderer> renderer;
     vtkNew<vtkRenderWindow> renderWindow;
