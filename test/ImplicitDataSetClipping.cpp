@@ -43,36 +43,6 @@ int main(int argc, char* argv[])
     reader->SetFileName(filename.c_str());
     reader->Update();
     // --------------- END ---------------
-
-    //--------------- 单元过滤器 ---------------
-    // Add ids to the points and cells of the vtpFile
-    vtkNew<vtkIdFilter> cellIdFilter;
-    cellIdFilter->SetInputConnection(reader->GetOutputPort());
-    cellIdFilter->SetCellIds(true);
-    cellIdFilter->SetPointIds(false);
-#if VTK890
-    cellIdFilter->SetCellIdsArrayName("CellIds");
-#else
-    cellIdFilter->SetIdsArrayName("CellIds");
-#endif
-    cellIdFilter->Update();
-
-    //--------------- END ---------------  得到cellIdFilter
-
-    //--------------- 点过滤器 ---------------
-    vtkNew<vtkIdFilter> pointIdFilter;
-    pointIdFilter->SetInputConnection(cellIdFilter->GetOutputPort());
-    pointIdFilter->SetCellIds(false);
-    pointIdFilter->SetPointIds(true);
-#if VTK890
-    pointIdFilter->SetPointIdsArrayName("PointIds");
-#else
-    pointIdFilter->SetIdsArrayName("PointIds");
-#endif
-    pointIdFilter->Update();
-    vtkDataSet* clipWithIds = pointIdFilter->GetOutput();
-    //--------------- END ---------------    得到clipWithIds
-
     // --------------- implicit DataSet ---------------
     // PolyData to process
     vtkSmartPointer<vtkPolyData> polyData = reader->GetOutput();
@@ -113,7 +83,7 @@ int main(int argc, char* argv[])
     vtkNew<vtkClipPolyData> clipper;
     clipper->SetClipFunction(plane1);// 切割的隐式数据集
     //clipper->SetClipFunction(plane2);// 切割的隐式数据集
-    clipper->SetInputData(clipWithIds);
+    clipper->SetInputData(polyData);
     clipper->InsideOutOn();
     clipper->Update();
     // --------------- END ---------------
@@ -159,4 +129,3 @@ int main(int argc, char* argv[])
 
     return EXIT_SUCCESS;
 }
-
